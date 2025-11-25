@@ -5,27 +5,24 @@ import time
 import tictactoe as ttt
 
 pygame.init()
-size = width, height = 600, 400
+size = width, height = 700, 700  # Tăng kích thước cửa sổ cho 5x5
 
 # Colors
 black = (0, 0, 0)
 white = (255, 255, 255)
 
 screen = pygame.display.set_mode(size)
+pygame.display.set_caption("Tic-Tac-Toe 5x5")
 
 mediumFont = pygame.font.Font("OpenSans-Regular.ttf", 28)
 largeFont = pygame.font.Font("OpenSans-Regular.ttf", 40)
-moveFont = pygame.font.Font("OpenSans-Regular.ttf", 40) # Giảm font size quân cờ để vừa ô nhỏ hơn
+moveFont = pygame.font.Font("OpenSans-Regular.ttf", 50)  # Giảm font size cho ô nhỏ hơn
 
 user = None
 board = ttt.initial_state()
 ai_turn = False
 
-# Định nghĩa kích thước bảng
-BOARD_SIZE = 5 
-
 while True:
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
@@ -36,7 +33,7 @@ while True:
     if user is None:
 
         # Draw title
-        title = largeFont.render("Play Tic-Tac-Toe", True, white)
+        title = largeFont.render("Play Tic-Tac-Toe 5x5", True, white)
         titleRect = title.get_rect()
         titleRect.center = ((width / 2), 50)
         screen.blit(title, titleRect)
@@ -69,19 +66,16 @@ while True:
 
     else:
 
-        # Draw game board
-        # Giảm kích thước ô từ 80 xuống 50 để vừa bảng 5x5 trong chiều cao 400px
-        tile_size = 50 
-        
-        # Tính toán lại vị trí bắt đầu dựa trên BOARD_SIZE
-        tile_origin = (width / 2 - (BOARD_SIZE / 2 * tile_size),
-                       height / 2 - (BOARD_SIZE / 2 * tile_size))
+        # Draw game board - THAY ĐỔI CHO 5x5
+        tile_size = 80  # Kích thước mỗi ô
+        board_size = 5  # Kích thước bảng 5x5
+        tile_origin = (width / 2 - (board_size / 2 * tile_size),
+                       height / 2 - (board_size / 2 * tile_size))
         tiles = []
         
-        # Thay range(3) bằng range(BOARD_SIZE)
-        for i in range(BOARD_SIZE):
+        for i in range(board_size):  # Thay range(3) thành range(5)
             row = []
-            for j in range(BOARD_SIZE):
+            for j in range(board_size):  # Thay range(3) thành range(5)
                 rect = pygame.Rect(
                     tile_origin[0] + j * tile_size,
                     tile_origin[1] + i * tile_size,
@@ -89,13 +83,11 @@ while True:
                 )
                 pygame.draw.rect(screen, white, rect, 3)
 
-                # Kiểm tra board[i][j] tồn tại (tránh lỗi nếu tictactoe.py chưa update)
-                if i < len(board) and j < len(board[i]):
-                    if board[i][j] != ttt.EMPTY:
-                        move = moveFont.render(board[i][j], True, white)
-                        moveRect = move.get_rect()
-                        moveRect.center = rect.center
-                        screen.blit(move, moveRect)
+                if board[i][j] != ttt.EMPTY:
+                    move = moveFont.render(board[i][j], True, white)
+                    moveRect = move.get_rect()
+                    moveRect.center = rect.center
+                    screen.blit(move, moveRect)
                 row.append(rect)
             tiles.append(row)
 
@@ -128,13 +120,12 @@ while True:
             else:
                 ai_turn = True
 
-        # Check for a user move
+        # Check for a user move - THAY ĐỔI CHO 5x5
         click, _, _ = pygame.mouse.get_pressed()
         if click == 1 and user == player and not game_over:
             mouse = pygame.mouse.get_pos()
-            # Cập nhật vòng lặp input
-            for i in range(BOARD_SIZE):
-                for j in range(BOARD_SIZE):
+            for i in range(board_size):  # Thay range(3) thành range(5)
+                for j in range(board_size):  # Thay range(3) thành range(5)
                     if (board[i][j] == ttt.EMPTY and tiles[i][j].collidepoint(mouse)):
                         board = ttt.result(board, (i, j))
 

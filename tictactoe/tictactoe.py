@@ -11,7 +11,7 @@ import random
 X = "X"
 O = "O"
 EMPTY = None
-
+MAX_DEPTH = 3
 
 def initial_state():
     """
@@ -66,60 +66,43 @@ def result(board, action):
     return new_board
 
 
-def check(user,board):
+def check_line(line, user):
+    count = 0
+    for cell in line:
+        if cell == user:
+            count += 1
+            if count == 4:
+                return True
+        else:
+            count = 0
+    return False
+
+def check(user, board):
+    """
+    Return True if user is the winner
+    """
     for row in board:
-        count_user = row.count(user)
-        if count_user >= 4:
-            for i in range(1, 4):
-                if row[i] != user:
-                    return False
-            return True
-    a = 0
-    b = 1
-    while (0 <= a and a < 5 and 0 <= b and b < 5):
-        if board[i][j] != user: return False
-        a += 1
-        b += 1
-    a = 1
-    b = 0
-    while (0 <= a and a < 5 and 0 <= b and b < 5):
-        if board[i][j] != user: return False
-        a += 1
-        b += 1
-    a = 3
-    b = 0
-    while (0 <= a and a < 5 and 0 <= b and b < 5):
-        if board[i][j] != user: return False
-        a -= 1
-        b += 1
-    a = 4
-    b = 1
-    while (0 <= a and a < 5 and 0 <= b and b < 5):
-        if board[i][j] != user: return False
-        a -= 1
-        b += 1
-    temp = []
-    i = 0
-    j = 0
-    while (i < 5 and j < 5):
-        temp.append(board[i][j])
-        i += 1
-        j += 1
-    if temp.count(user) >= 4:
-        for i in range (1, 4):
-            if temp[i] != user:
-                return False
-    i = 4
-    j = 0
-    while (i >= 0 and j < 5):
-        temp.append(board[i][j])
-        i -= 1
-        j += 1
-    if temp.count(user) >= 4:
-        for i in range (1, 4):
-            if temp[i] != user:
-                return False
-    return True
+        if check_line(row, user): return True
+    
+    for col in range(5):
+        column = [board[row][col] for row in range(5)]
+        if check_line(column, user): return True
+        
+    diagonals = []
+    
+    diagonals.append([board[i][i] for i in range(5)])
+    diagonals.append([board[i][i+1] for i in range(4)])
+    diagonals.append([board[i+1][i] for i in range(4)])
+    
+    diagonals.append([board[i][4-i] for i in range(5)])
+    diagonals.append([board[i][3-i] for i in range(4)])
+    diagonals.append([board[i+1][4-i] for i in range(4)])
+    
+    for diag in diagonals:
+        if check_line(diag, user): return True
+            
+    return False
+
 
 def winner(board):
     """
@@ -146,50 +129,51 @@ def terminal(board):
         for cell in row:
             if cell == EMPTY:
                 return False
-    
     return True
 
-
-def utility(board):
-    """
-    Returns 1 if X has won the game, -1 if O has won, 0 otherwise.
-    """
-    if winner(board) == X:
-        return 1
-    if winner(board) == O:
-        return -1
+def evaluate_line(line):
     return 0
 
+def evaluate(board):
+    score = 0
+    for row in board:
+        pass
+    return 0
 
-def maxValue(board):
-    global actions1
-    if terminal(board):
-        return utility(board)
-    v_max = -1
+def maxValue(board, max_value, min_value, depth):
+    if terminal(board) or depth == MAX_DEPTH:
+        return evaluate(board), None
+    
+    best_move = None
+    val = -math.inf
+
     for action in actions(board):
-        v = minValue(result(board, action))
-        if v_max == v:
-            actions1.append(v)
-        elif v_max < v:
-            actions1 = [action]
-            v_max = v
-    return v
+        v, _ = minValue(result(board, action), max_value, min_value, depth + 1)
+        if v > val:
+            best_move = action
+            val = v
+        max_value = max(max_value, val)
+        if max_value >= min_value:
+            break
+    return max_value, best_move
 
 
-def minValue(board):
-    global actions2
-    if terminal(board):
-        return utility(board)
-    v_min = 1
+def minValue(board, max_value, min_value, depth):
+    if terminal(board) or depth == MAX_DEPTH:
+        return evaluate(board), None
+    
+    best_move = None
+    val = math.inf
+    
     for action in actions(board):
-        v = maxValue(result(board, action))
-        if v_min == v:
-            actions2.append(v)
-        elif v_min > v:
-            actions2 = [action]
-            v_min = v
-    return v
-
+        v, _ = maxValue(result(board, action), max_value, min_value, depth + 1)
+        if v < val:
+            best_move = action
+            val = v
+        min_value = min(min_value, val)
+        if (min_value <= max_value):
+            break
+    return min_value, best_move
 
 def minimax(board):
     """
@@ -202,12 +186,9 @@ def minimax(board):
     if terminal(board) == False:
         turn = player(board)
         if turn == X:
-            actions1 = []
-            value = maxValue(board)
-            i = random.randint(0,len(actions1)-1)
-            return actions1[i]
+            _, action = maxValue(board, 0)
+            
         if turn == O:
-            actions2 = []
-            value = minValue(board)
-            i = random.randint(0,len(actions2)-1)
-            return actions2[i]
+            _, action = minValue(board, 0)
+
+        return action 
