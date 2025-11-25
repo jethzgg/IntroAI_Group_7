@@ -17,9 +17,11 @@ def initial_state():
     """
     Returns starting state of the board.
     """
-    return [[EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, EMPTY]]
+    return [[EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY]]
 
 
 def player(board):
@@ -42,8 +44,8 @@ def actions(board):
     Returns set of all possible actions (i, j) available on the board.
     """
     possible = set()
-    for i in range(3):
-        for j in range (3):
+    for i in range(5):
+        for j in range (5):
             if board[i][j] == EMPTY:
                 possible.add((i,j))
     return possible
@@ -65,18 +67,59 @@ def result(board, action):
 
 
 def check(user,board):
-    for i in range(3):
-        if board[i] == [user,user,user]:
+    for row in board:
+        count_user = row.count(user)
+        if count_user >= 4:
+            for i in range(1, 4):
+                if row[i] != user:
+                    return False
             return True
-    for j in range(3):
-        if board[0][j] == board[1][j] and board[1][j] == board[2][j] and board[2][j] == user:
-            return True
-    if board[0][0] == board[2][2] and board[2][2] == board[1][1] and board[1][1] == user:
-        return True        
-    if board[0][2] == board[2][0] and board[2][0] == board[1][1] and board[1][1] == user:
-        return True
-    return False
-
+    a = 0
+    b = 1
+    while (0 <= a and a < 5 and 0 <= b and b < 5):
+        if board[i][j] != user: return False
+        a += 1
+        b += 1
+    a = 1
+    b = 0
+    while (0 <= a and a < 5 and 0 <= b and b < 5):
+        if board[i][j] != user: return False
+        a += 1
+        b += 1
+    a = 3
+    b = 0
+    while (0 <= a and a < 5 and 0 <= b and b < 5):
+        if board[i][j] != user: return False
+        a -= 1
+        b += 1
+    a = 4
+    b = 1
+    while (0 <= a and a < 5 and 0 <= b and b < 5):
+        if board[i][j] != user: return False
+        a -= 1
+        b += 1
+    temp = []
+    i = 0
+    j = 0
+    while (i < 5 and j < 5):
+        temp.append(board[i][j])
+        i += 1
+        j += 1
+    if temp.count(user) >= 4:
+        for i in range (1, 4):
+            if temp[i] != user:
+                return False
+    i = 4
+    j = 0
+    while (i >= 0 and j < 5):
+        temp.append(board[i][j])
+        i -= 1
+        j += 1
+    if temp.count(user) >= 4:
+        for i in range (1, 4):
+            if temp[i] != user:
+                return False
+    return True
 
 def winner(board):
     """
@@ -118,47 +161,33 @@ def utility(board):
     return 0
 
 
-actions1 = []
-def maxv(board):
+def maxValue(board):
     global actions1
     if terminal(board):
         return utility(board)
-    va = -1
-    v = va
+    v_max = -1
     for action in actions(board):
-        v = minv(result(board,action))
-        if v == 1:
+        v = minValue(result(board, action))
+        if v_max == v:
+            actions1.append(v)
+        elif v_max < v:
             actions1 = [action]
-            return v
-        if v > va:
-            va = v
-            actions1 = [action]
-        elif v == va:
-            actions1.append(action)
-        else:
-            pass
+            v_max = v
     return v
 
 
-actions2 = []
-def minv(board):
+def minValue(board):
     global actions2
     if terminal(board):
         return utility(board)
-    va = 1
-    v = va
+    v_min = 1
     for action in actions(board):
-        v = maxv(result(board,action))
-        if v == -1:
+        v = maxValue(result(board, action))
+        if v_min == v:
+            actions2.append(v)
+        elif v_min > v:
             actions2 = [action]
-            return v
-        if v < va:
-            va = v
-            actions2 = [action]
-        elif v == va:
-            actions2.append(action)
-        else:
-            pass
+            v_min = v
     return v
 
 
@@ -167,18 +196,18 @@ def minimax(board):
     Returns the optimal action for the current player on the board.
     """
     if board == initial_state():
-        i = random.randint(0,2)
-        j = random.randint(0,2)
+        i = random.randint(0,4)
+        j = random.randint(0,4)
         return (i,j)
     if terminal(board) == False:
         turn = player(board)
         if turn == X:
-            value = maxv(board)
-            action = actions1
-            i = random.randint(0,len(action)-1)
-            return action[i]
+            actions1 = []
+            value = maxValue(board)
+            i = random.randint(0,len(actions1)-1)
+            return actions1[i]
         if turn == O:
-            value = minv(board)
-            action = actions2
-            i = random.randint(0,len(action)-1)
-            return action[i]
+            actions2 = []
+            value = minValue(board)
+            i = random.randint(0,len(actions2)-1)
+            return actions2[i]

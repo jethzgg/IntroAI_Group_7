@@ -15,11 +15,14 @@ screen = pygame.display.set_mode(size)
 
 mediumFont = pygame.font.Font("OpenSans-Regular.ttf", 28)
 largeFont = pygame.font.Font("OpenSans-Regular.ttf", 40)
-moveFont = pygame.font.Font("OpenSans-Regular.ttf", 60)
+moveFont = pygame.font.Font("OpenSans-Regular.ttf", 40) # Giảm font size quân cờ để vừa ô nhỏ hơn
 
 user = None
 board = ttt.initial_state()
 ai_turn = False
+
+# Định nghĩa kích thước bảng
+BOARD_SIZE = 5 
 
 while True:
 
@@ -67,13 +70,18 @@ while True:
     else:
 
         # Draw game board
-        tile_size = 80
-        tile_origin = (width / 2 - (1.5 * tile_size),
-                       height / 2 - (1.5 * tile_size))
+        # Giảm kích thước ô từ 80 xuống 50 để vừa bảng 5x5 trong chiều cao 400px
+        tile_size = 50 
+        
+        # Tính toán lại vị trí bắt đầu dựa trên BOARD_SIZE
+        tile_origin = (width / 2 - (BOARD_SIZE / 2 * tile_size),
+                       height / 2 - (BOARD_SIZE / 2 * tile_size))
         tiles = []
-        for i in range(3):
+        
+        # Thay range(3) bằng range(BOARD_SIZE)
+        for i in range(BOARD_SIZE):
             row = []
-            for j in range(3):
+            for j in range(BOARD_SIZE):
                 rect = pygame.Rect(
                     tile_origin[0] + j * tile_size,
                     tile_origin[1] + i * tile_size,
@@ -81,11 +89,13 @@ while True:
                 )
                 pygame.draw.rect(screen, white, rect, 3)
 
-                if board[i][j] != ttt.EMPTY:
-                    move = moveFont.render(board[i][j], True, white)
-                    moveRect = move.get_rect()
-                    moveRect.center = rect.center
-                    screen.blit(move, moveRect)
+                # Kiểm tra board[i][j] tồn tại (tránh lỗi nếu tictactoe.py chưa update)
+                if i < len(board) and j < len(board[i]):
+                    if board[i][j] != ttt.EMPTY:
+                        move = moveFont.render(board[i][j], True, white)
+                        moveRect = move.get_rect()
+                        moveRect.center = rect.center
+                        screen.blit(move, moveRect)
                 row.append(rect)
             tiles.append(row)
 
@@ -122,8 +132,9 @@ while True:
         click, _, _ = pygame.mouse.get_pressed()
         if click == 1 and user == player and not game_over:
             mouse = pygame.mouse.get_pos()
-            for i in range(3):
-                for j in range(3):
+            # Cập nhật vòng lặp input
+            for i in range(BOARD_SIZE):
+                for j in range(BOARD_SIZE):
                     if (board[i][j] == ttt.EMPTY and tiles[i][j].collidepoint(mouse)):
                         board = ttt.result(board, (i, j))
 
