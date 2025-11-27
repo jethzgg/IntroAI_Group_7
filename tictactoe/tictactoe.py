@@ -1,194 +1,166 @@
-"""
-Tic Tac Toe Player
-"""
-
-
 import math
-import copy
 import random
-
-
+import time
+import Weight
 X = "X"
 O = "O"
-EMPTY = None
-MAX_DEPTH = 3
+EMPTY = '_'
+WIN = 4
+N = 5
 
 def initial_state():
-    """
-    Returns starting state of the board.
-    """
-    return [[EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
-            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY]]
+    return [[EMPTY for _ in range(N)] for _ in range(N)]
 
-
-def player(board):
-    """
-    Returns player who has the next turn on a board.
-    """
-    # Count the number of 'X's and 'O's on the board to determine the player turn
+def player(board) -> str:
     count_X = sum(row.count(X) for row in board)
-    count_O = sum(row.count(O) for row in board)
-    
-    # Determine whose turn it is based on the counts
+    count_O = sum(row.count(O) for row in board) 
     if count_X == count_O:
-        return 'X'  # It's X's turn
-    else:
-        return 'O'  # It's O's turn
+        return X
+    else: # if count_X > count_O
+        return O
 
-
-def actions(board):
-    """
-    Returns set of all possible actions (i, j) available on the board.
-    """
+def actions(board) -> set:
     possible = set()
-    for i in range(5):
-        for j in range (5):
+    for i in range(N):
+        for j in range(N):
             if board[i][j] == EMPTY:
-                possible.add((i,j))
+                possible.add((i, j))
     return possible
 
-
-def result(board, action):
-    """
-    Returns the board that results from making move (i, j) on the board.
-    """
-    possible = actions(board)
-    turn = player(board)
-    new_board = copy.deepcopy(board)
-    i,j = action
-    if (i,j) not in possible:
-        raise Exception("NOT VALID MOVE")
-    else:
-        new_board[i][j] = turn
-    return new_board
-
-
-def check_line(line, user):
-    count = 0
-    for cell in line:
-        if cell == user:
-            count += 1
-            if count == 4:
-                return True
-        else:
-            count = 0
-    return False
-
-def check(user, board):
-    """
-    Return True if user is the winner
-    """
+def heuristic(board) -> int:
+    score = 0
+    # check row
     for row in board:
-        if check_line(row, user): return True
-    
-    for col in range(5):
-        column = [board[row][col] for row in range(5)]
-        if check_line(column, user): return True
-        
-    diagonals = []
-    
-    diagonals.append([board[i][i] for i in range(5)])
-    diagonals.append([board[i][i+1] for i in range(4)])
-    diagonals.append([board[i+1][i] for i in range(4)])
-    
-    diagonals.append([board[i][4-i] for i in range(5)])
-    diagonals.append([board[i][3-i] for i in range(4)])
-    diagonals.append([board[i+1][4-i] for i in range(4)])
-    
-    for diag in diagonals:
-        if check_line(diag, user): return True
-            
-    return False
+        line_str = ''.join(row)
+        for k, v in Weight.patterns.items():
+            if k in line_str:
+                score += v
+    # check column
+    for col in range(N):
+        line_str = ''.join(board[_][col] for _ in range(N))
+        for k, v in Weight.patterns.items():
+            if k in line_str:
+                score += v
+    # check main diagonal
+    for i in range(N - WIN + 1):
+        for j in range(N - WIN + 1):
+            line_str = ''.join(board[i + k][j + k] for k in range(WIN))
+            for k, v in Weight.patterns.items():
+                if k in line_str:
+                    score += v
+    # check secondary diagonal:
+    for i in range(N - WIN + 1):
+        for j in range(WIN - 1, N):
+            line_str = ''.join(board[i + k][j - k] for k in range(WIN))
+            for k, v in Weight.patterns.items():
+                if k in line_str:
+                    score += v
+    return score
 
-
-def winner(board):
-    """
-    Returns the winner of the game, if there is one.
-    """
-    if check(X,board) == True and check(O,board) == True: raise Exception("INVALID BOARD STATE")
-    if check(X,board):
-        return X
-    elif check(O,board):
-        return O
-    else:
-        return None
-
-
-def terminal(board):
-    """
-    Returns True if game is over, False otherwise.
-    """
-    # Check for a win
-    if check(X,board) or check(O,board):
-        return True
-    
+def winner(board) -> str:
+    maxWin = X*WIN
+    minWin = O*WIN
+    # check row
     for row in board:
-        for cell in row:
-            if cell == EMPTY:
+        line_str = ''.join(row)
+        if maxWin in line_str: return X 
+        if minWin in line_str: return O
+    # check column
+    for col in range(N):
+        line_str = ''.join(board[_][col] for _ in range(N))
+        if maxWin in line_str: return X 
+        if minWin in line_str: return O
+    # check main diagonal
+    for i in range(N - WIN + 1):
+        for j in range(N - WIN + 1):
+            line_str = ''.join(board[i + k][j + k] for k in range(WIN))
+            if maxWin in line_str: return X 
+            if minWin in line_str: return O
+    # check secondary diagonal:
+    for i in range(N - WIN + 1):
+        for j in range(WIN - 1, N):
+            line_str = ''.join(board[i + k][j - k] for k in range(WIN))
+            if maxWin in line_str: return X 
+            if minWin in line_str: return O
+    # not win yet 
+    return None
+
+def terminal(board) -> bool:
+    
+    if winner(board) is not None: return True
+    # check not win yet
+    for i in range(N):
+        for j in range(N):
+            if board[i][j] == EMPTY:
                 return False
+    # tie
     return True
 
-def evaluate_line(line):
-    return 0
+def utility(board) -> int:
+    # If the game is not terminal yet, we have to heuristic the score of the game base on
+    # patterns, like chance of winning for each player, who likely to win 
+    # If the game is terminal, we return 1, -1, 0
+    if terminal(board):
+        notation = winner(board)
+        if notation == X:
+            return 1
+        elif notation == O:
+            return -1
+        return 0
+    # heuristic
+    return heuristic(board)
 
-def evaluate(board):
-    score = 0
-    for row in board:
-        pass
-    return 0
-
-def maxValue(board, max_value, min_value, depth):
-    if terminal(board) or depth == MAX_DEPTH:
-        return evaluate(board), None
-    
-    best_move = None
-    val = -math.inf
-
-    for action in actions(board):
-        v, _ = minValue(result(board, action), max_value, min_value, depth + 1)
-        if v > val:
-            best_move = action
-            val = v
-        max_value = max(max_value, val)
-        if max_value >= min_value:
-            break
-    return max_value, best_move
-
-
-def minValue(board, max_value, min_value, depth):
-    if terminal(board) or depth == MAX_DEPTH:
-        return evaluate(board), None
-    
-    best_move = None
-    val = math.inf
-    
-    for action in actions(board):
-        v, _ = maxValue(result(board, action), max_value, min_value, depth + 1)
-        if v < val:
-            best_move = action
-            val = v
-        min_value = min(min_value, val)
-        if (min_value <= max_value):
-            break
-    return min_value, best_move
-
-def minimax(board):
-    """
-    Returns the optimal action for the current player on the board.
-    """
+def minimaxB(board, depth,isMaxPlayer, alpha, beta) -> tuple: # (val, i, j, cnt, has prunning)
     if board == initial_state():
-        i = random.randint(0,4)
-        j = random.randint(0,4)
-        return (i,j)
-    if terminal(board) == False:
-        turn = player(board)
-        if turn == X:
-            _, action = maxValue(board, 0)
-            
-        if turn == O:
-            _, action = minValue(board, 0)
+        i, j = random.randint(0, N - 1), random.randint(0, N - 1)
+        return (0, i, j, 1)
+    if terminal(board) or depth == 0:
+        return (utility(board), None, None, 1)
+    if isMaxPlayer:
+        maxEval = -math.inf
+        best_i, best_j = None, None
+        total_cnt = 0
+        possible = actions(board)
+        for action in possible:
+            i, j = action
+            board[i][j] = "X"
+            value, tmp_i, tmp_j, node_cnt = minimaxB(board, depth - 1, False, alpha, beta)
+            total_cnt += node_cnt + 1
+            board[i][j] = EMPTY
+            if value > maxEval:
+                maxEval, best_i, best_j = value, i, j
+            alpha = max(value, alpha)
+            if beta <= alpha:
+                break
+        return (maxEval, best_i, best_j, total_cnt)
+    if not isMaxPlayer:
+        minEval = math.inf
+        best_i, best_j = None, None
+        total_cnt = 0
+        possible = actions(board)
+        for action in possible:
+            i, j = action
+            board[i][j] = "O"
+            value, tmp_i, tmp_j, node_cnt = minimaxB(board, depth - 1, True, alpha, beta)
+            total_cnt += node_cnt + 1
+            board[i][j] = EMPTY
+            if value < minEval:
+                i, j = action
+                minEval, best_i, best_j = value, i, j
+            beta = min(value, beta)
+            if beta <= alpha:
+                break
+        return (minEval, best_i, best_j, total_cnt)
 
-        return action 
+def minimax(board) -> tuple(): # tuple of (best_i, best_j, count_node, time_run)
+    turn = player(board)
+    global Step
+    Step = sum(1 for row in board for cell in row if cell is not EMPTY)
+    depth = None
+    if Step <= 3: depth = 3
+    else: depth = 6
+    start = time.perf_counter()
+    tmp_val, best_i, best_j, cnt = minimaxB(board, depth,  turn == X, -math.inf, math.inf)
+    end = time.perf_counter()
+    print(f"da duyet {cnt} node trong {end - start:.4f} giay voi {Step} buoc")
+    return (best_i, best_j)
