@@ -103,9 +103,9 @@ def utility(board) -> int:
     if terminal(board):
         notation = winner(board)
         if notation == X:
-            return 1
+            return 100000
         elif notation == O:
-            return -1
+            return -100000
         return 0
     # heuristic
     return heuristic(board)
@@ -156,9 +156,7 @@ def minimax(board) -> tuple(): # tuple of (best_i, best_j, count_node, time_run)
     turn = player(board)
     global Step
     Step = sum(1 for row in board for cell in row if cell is not EMPTY)
-    depth = None
-    if Step <= 3: depth = 3
-    else: depth = 6
+    depth = 5
     start = time.perf_counter()
     tmp_val, best_i, best_j, cnt = minimaxB(board, depth,  turn == X, -math.inf, math.inf)
     end = time.perf_counter()
