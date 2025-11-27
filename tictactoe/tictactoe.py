@@ -152,7 +152,7 @@ def minimaxB(board, depth,isMaxPlayer, alpha, beta) -> tuple: # (val, i, j, cnt,
                 break
         return (minEval, best_i, best_j, total_cnt)
 
-def minimax(board) -> tuple(): # tuple of (best_i, best_j, count_node, time_run)
+def minimax(board) -> tuple: # tuple of (best_i, best_j, count_node, time_run)
     turn = player(board)
     global Step
     Step = sum(1 for row in board for cell in row if cell is not EMPTY)
@@ -160,5 +160,5 @@ def minimax(board) -> tuple(): # tuple of (best_i, best_j, count_node, time_run)
     start = time.perf_counter()
     tmp_val, best_i, best_j, cnt = minimaxB(board, depth,  turn == X, -math.inf, math.inf)
     end = time.perf_counter()
-    print(f"da duyet {cnt} node trong {end - start:.4f} giay voi {Step} buoc")
+    #print(f"da duyet {cnt} node trong {end - start:.4f} giay voi {Step} buoc")
     return (best_i, best_j)
