@@ -59,6 +59,9 @@ async def make_move(request: MoveRequest):
     """Make a player move"""
     row, col = request.row, request.col
     
+    if not (0 <= row < ttt.N and 0 <= col < ttt.N):
+        raise HTTPException(status_code=400, detail="Invalid position")
+
     if game_state["game_over"]:
         raise HTTPException(status_code=400, detail="Game is over")
     
