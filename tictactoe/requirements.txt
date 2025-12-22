@@ -1,1 +1,4 @@
-pygame-ce
+pygame
+fastapi
+uvicorn
+pydantic

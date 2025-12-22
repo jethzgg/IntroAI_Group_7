@@ -19,7 +19,7 @@ largeFont = pygame.font.Font("OpenSans-Regular.ttf", 40)
 moveFont = pygame.font.Font("OpenSans-Regular.ttf", 50)  # Giảm font size cho ô nhỏ hơn
 
 user = None
-board = ttt.initial_state()
+board = ttt.initialState()
 ai_turn = False
 
 while True:
@@ -91,16 +91,18 @@ while True:
                 row.append(rect)
             tiles.append(row)
 
-        game_over = ttt.terminal(board)
-        player = ttt.player(board)
+        game_over = ttt.isTerminal(board)
+        player = ttt.whoseTurn(board)
 
         # Show title
         if game_over:
-            winner = ttt.winner(board)
-            if winner is None:
+            winner_player = None
+            if ttt.winner(board, ttt.X): winner_player = ttt.X
+            if ttt.winner(board, ttt.O): winner_player = ttt.O
+            if winner_player is None:
                 title = f"Game Over: Tie."
             else:
-                title = f"Game Over: {winner} wins."
+                title = f"Game Over: {winner_player} wins."
         elif user == player:
             title = f"Play as {user}"
         else:
@@ -114,8 +116,9 @@ while True:
         if user != player and not game_over:
             if ai_turn:
                 time.sleep(0.5)
-                i, j = ttt.minimax(board)
-                board[i][j] = ttt.player(board)
+                i, j = ttt.bestMove(board)
+                board[i][j] = ttt.whoseTurn(board)
+                ttt.lastX, ttt.lastY = i, j
                 ai_turn = False
             else:
                 ai_turn = True
@@ -127,7 +130,8 @@ while True:
             for i in range(board_size):  # Thay range(3) thành range(5)
                 for j in range(board_size):  # Thay range(3) thành range(5)
                     if (board[i][j] == ttt.EMPTY and tiles[i][j].collidepoint(mouse)):
-                        board[i][j] = ttt.player(board)
+                        board[i][j] = ttt.whoseTurn(board)
+                        ttt.lastX, ttt.lastY = i, j                        
 
         if game_over:
             againButton = pygame.Rect(width / 3, height - 65, width / 3, 50)
@@ -142,7 +146,7 @@ while True:
                 if againButton.collidepoint(mouse):
                     time.sleep(0.2)
                     user = None
-                    board = ttt.initial_state()
+                    board = ttt.initialState()
                     ai_turn = False
 
     pygame.display.flip()
