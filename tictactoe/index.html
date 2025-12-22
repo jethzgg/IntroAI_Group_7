@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe 5x5 AI</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --board-bg: #2d2d2d;
+            --cell-bg: #3d3d3d;
+            --text-color: #ececec;
+            --accent-x: #ff4757;
+            --accent-o: #2ed573;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 { margin-bottom: 10px; }
+
+        .controls { margin-bottom: 20px; display: flex; gap: 10px; }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+        
+        button:active { transform: scale(0.95); }
+        .btn-x { background-color: var(--accent-x); color: white; }
+        .btn-o { background-color: var(--accent-o); color: white; }
+        .btn-reset { background-color: #57606f; color: white; }
+
+        #status {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            height: 30px;
+            color: #ffa502;
+        }
+
+        /* CSS Grid cho bàn cờ 5x5 */
+        .board {
+            display: grid;
+            /* Tự động tạo 5 cột, mỗi cột 60px */
+            grid-template-columns: repeat(5, 60px); 
+            gap: 5px;
+            background-color: var(--board-bg);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .cell {
+            width: 60px;
+            height: 60px;
+            background-color: var(--cell-bg);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem; /* Font to cho X và O */
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .cell:hover { background-color: #505050; }
+        
+        .cell.X { color: var(--accent-x); }
+        .cell.O { color: var(--accent-o); }
+
+    </style>
+</head>
+<body>
+
+    <h1>Cờ Caro 5x5 vs AI</h1>
+    
+    <div class="controls">
+        <button class="btn-x" onclick="startGame('X')">Chọn X (Đi trước)</button>
+        <button class="btn-o" onclick="startGame('O')">Chọn O (Đi sau)</button>
+        <button class="btn-reset" onclick="resetGame()">Làm mới</button>
+    </div>
+
+    <div id="status">Vui lòng chọn phe để bắt đầu!</div>
+
+    <div class="board" id="board">
+        </div>
+
+    <script>
+        // Khi tải trang, vẽ bàn cờ rỗng 5x5
+        document.addEventListener('DOMContentLoaded', () => {
+            renderEmptyBoard();
+        });
+
+        // Hàm vẽ bàn cờ rỗng ban đầu
+        function renderEmptyBoard() {
+            // Tạo mảng 5x5 rỗng để render
+            const emptyBoard = Array(5).fill().map(() => Array(5).fill(null));
+            renderBoard(emptyBoard);
+        }
+
+        async function startGame(player) {
+            try {
+                const res = await fetch('/api/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({player: player})
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    document.getElementById('status').innerText = data.message;
+                    renderEmptyBoard();
+                    
+                    // Nếu người chơi chọn O, AI (X) sẽ đi trước -> cần cập nhật bàn cờ ngay
+                    if (player === 'O') {
+                        updateStatus();
+                    }
+                } else {
+                    alert("Lỗi: " + data.detail);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Không thể kết nối tới Server!");
+            }
+        }
+
+        async function move(row, col) {
+            try {
+                const res = await fetch('/api/move', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({row: row, col: col})
+                });
+                
+                const data = await res.json();
+
+                if (!res.ok) {
+                    // Nếu backend trả về lỗi (VD: đánh vào ô đã đánh)
+                    if(data.detail) alert(data.detail);
+                    return;
+                }
+
+                // Cập nhật lại giao diện dựa trên dữ liệu server trả về
+                renderBoard(data.board);
+                document.getElementById('status').innerText = data.message;
+
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function updateStatus() {
+            const res = await fetch('/api/status');
+            const data = await res.json();
+            renderBoard(data.board);
+            document.getElementById('status').innerText = data.message;
+        }
+
+        async function resetGame() {
+            await fetch('/api/reset', { method: 'POST' });
+            document.getElementById('status').innerText = "Đã reset. Chọn phe để chơi lại!";
+            renderEmptyBoard();
+        }
+
+        function renderBoard(board) {
+            const boardDiv = document.getElementById('board');
+            boardDiv.innerHTML = ''; // Xóa bàn cờ cũ
+
+            // Duyệt qua mảng 2 chiều
+            board.forEach((row, rIndex) => {
+                row.forEach((cell, cIndex) => {
+                    const cellDiv = document.createElement('div');
+                    
+                    // Thêm class X hoặc O để tô màu
+                    let className = 'cell';
+                    if (cell === 'X') className += ' X';
+                    if (cell === 'O') className += ' O';
+                    
+                    cellDiv.className = className;
+                    cellDiv.innerText = cell === null ? '' : cell;
+                    
+                    // Gán sự kiện click gửi tọa độ
+                    cellDiv.onclick = () => move(rIndex, cIndex);
+                    
+                    boardDiv.appendChild(cellDiv);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
