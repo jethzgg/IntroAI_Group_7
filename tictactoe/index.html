@@ -206,7 +206,7 @@
 
         async function resetGame() {
             await fetch('/api/reset', { method: 'POST' });
-            document.getElementById('status').innerText = "Đã reset. Chọn phe để chơi lại!";
+            document.getElementById('status').innerText = "Please choose a side to start!";
             renderEmptyBoard();
         }
 
