@@ -87,15 +87,15 @@
 </head>
 <body>
 
-    <h1>Cờ Caro 5x5 vs AI</h1>
+    <h1>Tic Tac Toe</h1>
     
     <div class="controls">
-        <button class="btn-x" onclick="startGame('X')">Chọn X (Đi trước)</button>
-        <button class="btn-o" onclick="startGame('O')">Chọn O (Đi sau)</button>
-        <button class="btn-reset" onclick="resetGame()">Làm mới</button>
+        <button class="btn-x" onclick="startGame('X')">Choose X (Go first)</button>
+        <button class="btn-o" onclick="startGame('O')">Choose O (Go second)</button>
+        <button class="btn-reset" onclick="resetGame()">Reset</button>
     </div>
 
-    <div id="status">Vui lòng chọn phe để bắt đầu!</div>
+    <div id="status">Please choose a side to start!</div>
 
     <div class="board" id="board">
         </div>
@@ -115,6 +115,9 @@
 
         async function startGame(player) {
             try {
+                document.getElementById('status').innerText = "Starting game...";
+                currentPlayer = player; // Lưu phe người chơi
+                
                 const res = await fetch('/api/start', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -124,24 +127,44 @@
                 const data = await res.json();
                 
                 if (res.ok) {
-                    document.getElementById('status').innerText = data.message;
-                    renderEmptyBoard();
-                    
-                    // Nếu người chơi chọn O, AI (X) sẽ đi trước -> cần cập nhật bàn cờ ngay
-                    if (player === 'O') {
-                        updateStatus();
-                    }
+                    // Render bàn cờ từ response (đã có nước đi của AI nếu chọn O)
+                    renderBoard(data.board);
+                    document.getElementById('status').innerText = data.message; 
                 } else {
-                    alert("Lỗi: " + data.detail);
+                    alert("Error: " + data.detail);
                 }
             } catch (e) {
                 console.error(e);
-                alert("Không thể kết nối tới Server!");
+                alert("Cannot connect to the server");
             }
         }
 
+        let isProcessing = false; // Ngăn click liên tục
+        let currentPlayer = null; // Lưu phe người chơi
+        
         async function move(row, col) {
+            if (isProcessing) return; // Đang xử lý thì bỏ qua
+            
+            // Kiểm tra ô đã có quân chưa (client-side)
+            const cells = document.querySelectorAll('.cell');
+            const cellIndex = row * 5 + col;
+            if (cells[cellIndex] && cells[cellIndex].innerText !== '' && cells[cellIndex].innerText !== '_') {
+                return;
+            }
+            
             try {
+                isProcessing = true;
+                
+                // 1. Hiện nước đi của người chơi NGAY LẬP TỨC
+                if (cells[cellIndex]) {
+                    cells[cellIndex].innerText = currentPlayer;
+                    cells[cellIndex].classList.add(currentPlayer);
+                }
+                
+                // 2. Hiện trạng thái "AI đang suy nghĩ"
+                document.getElementById('status').innerText = "AI is thinking...";
+                
+                // 3. Gọi API
                 const res = await fetch('/api/move', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -151,17 +174,26 @@
                 const data = await res.json();
 
                 if (!res.ok) {
-                    // Nếu backend trả về lỗi (VD: đánh vào ô đã đánh)
+                    // Nếu backend trả về lỗi → hoàn tác nước đi
                     if(data.detail) alert(data.detail);
+                    isProcessing = false;
+                    await updateStatus(); // Cập nhật lại trạng thái đúng
                     return;
                 }
 
-                // Cập nhật lại giao diện dựa trên dữ liệu server trả về
+                // 4. Thêm delay nhỏ để người chơi thấy AI đang "suy nghĩ"
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // 5. Cập nhật lại giao diện với nước đi của AI
                 renderBoard(data.board);
                 document.getElementById('status').innerText = data.message;
+                
+                isProcessing = false;
 
             } catch (e) {
                 console.error(e);
+                isProcessing = false;
+                await updateStatus();
             }
         }
 

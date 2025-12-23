@@ -52,7 +52,13 @@ async def start_game(request: StartGameRequest):
     game_state["user"] = player
     game_state["game_over"] = False
     
-    return {"status": "success", "message": f"Game started. You are {player}"}
+    # Nếu người chơi chọn O, AI (X) đi trước
+    if player == ttt.O:
+        ai_row, ai_col = ttt.bestMove(game_state["board"])
+        game_state["board"][ai_row][ai_col] = ttt.X
+        ttt.lastX, ttt.lastY = ai_row, ai_col
+    
+    return build_game_status()
 
 @app.post("/api/move")
 async def make_move(request: MoveRequest):
@@ -106,14 +112,14 @@ def build_game_status():
     if not game_over:
         current_player = ttt.whoseTurn(board)
         if current_player == game_state["user"]:
-            message = "Lượt của bạn"
+            message = "Your turn"
         else:
-            message = "AI đang suy nghĩ..."
+            message = "AI is thinking..."
     else:
         if ttt.winner(board, game_state["user"]):
-            message = "You win"
+            message = "You won"
         elif ttt.winner(board, ttt.O if game_state["user"] == ttt.X else ttt.X):
-            message = "AI wins"
+            message = "AI won"
         else:
             message = "Tie"
     
