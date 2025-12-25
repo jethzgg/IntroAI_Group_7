@@ -3,19 +3,19 @@ import PlayerCard from "../components/PlayerCard";
 import TicTacToeBoard from "../components/TicTacToeBoard";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { useNavigate } from "react-router";
-import { use, useState } from "react";
-import { useParams } from "react-router";
+import { useState } from "react";
 import { FaStepForward } from "react-icons/fa";
 import { FaStepBackward } from "react-icons/fa";
 import { FaAngleLeft } from "react-icons/fa6";
 import { FaAngleRight } from "react-icons/fa6";
 import WinningModal from "../components/WinningModal";
-export default function PlayerGame() {
+export default function computerGame() {
   const navigate = useNavigate();
   const [turn, setTurn] = useState("X");
   const params = new URLSearchParams(window.location.search);
   const rounds = params.get("rounds") || 1;
   const time = params.get("time") || 300;
+  const side = params.get("side") || "X";
   const [score, setScore] = useState({ X: 0, O: 0 });
   const [winner, setWinner] = useState(null);
   const onWin = (result) => {
@@ -50,21 +50,24 @@ export default function PlayerGame() {
       <Particles />
       <div className="col-span-2 flex-col border-r-2 h-full flex items-center justify-center">
         <PlayerCard
-          playerName={"Player 1"}
-          playerSide={"X"}
+          playerName={"Computer"}
+          playerSide={side === "X" ? "O" : "X"}
           timeLeft={time}
-          playerSideActive={turn === "X"}
+          computer={true}
+          playerSideActive={turn === (side === "X" ? "O" : "X")}
         />
         <TicTacToeBoard onWin={onWin} />
         <PlayerCard
-          playerName={"Player 2"}
-          playerSide={"O"}
+          playerName={"Player"}
+          playerSide={side}
           timeLeft={time}
-          playerSideActive={turn === "O"}
+          playerSideActive={turn === side}
         />
       </div>
       <div className="bg-gray-900 h-full">
-        <h1 className="font-extrabold text-3xl mb-5 mt-10">Player vs Player</h1>
+        <h1 className="font-extrabold text-3xl mb-5 mt-10">
+          Computer vs Player
+        </h1>
         <p className="font-bold text-xl">Number of rounds: {rounds}</p>
         <p className="font-bold text-2xl mb-5">Score</p>
         <p className="font-bold text-5xl mb-10">
@@ -74,7 +77,9 @@ export default function PlayerGame() {
 
         <p className="font-bold text-xl">Instructions:</p>
         <ul className="list-disc list-inside mt-2 text-left px-10">
-          <li>Player 1 is "X" and Player 2 is "O".</li>
+          <li>
+            You are "{side}" and computer is "{side === "X" ? "O" : "X"}".
+          </li>
           <li>Take turns to place your marks on the board.</li>
           <li>
             The first player to align 4 marks horizontally, vertically, or

@@ -20,7 +20,7 @@ function App() {
       <h1 className="font-extrabold">Tic Tac Toe Game</h1>
       <div className="card">
         <button
-          className="hover:shadow-lg hover:shadow-[#646cff] 
+          className="hover:shadow-lg hover:shadow-[#646cff] hover:border-[#646cff] hover:border-2 transition-all duration-50
 "
           onClick={() => {
             navigate("/computer");
@@ -30,14 +30,14 @@ function App() {
           Computer
         </button>
         <button
-          className="hover:shadow-lg hover:shadow-[#646cff]"
+          className="hover:shadow-lg hover:shadow-[#646cff] hover:border-[#646cff] hover:border-2 transition-all duration-50"
           onClick={() => {
             navigate("/withPlayer");
           }}
         >
           <SlPeople className="inline-block mr-2 text-xl" /> Play With Player
         </button>
-        <button className="hover:shadow-lg hover:shadow-[#646cff]">
+        <button className="hover:shadow-lg hover:shadow-[#646cff] hover:border-[#646cff] hover:border-2 transition-all duration-50">
           <IoIosSettings className="inline-block mr-2 text-xl" /> Cài đặt
         </button>
       </div>

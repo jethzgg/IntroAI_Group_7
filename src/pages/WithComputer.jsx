@@ -2,11 +2,11 @@ import { useNavigate } from "react-router";
 import Particles from "../components/Particle";
 import { useState } from "react";
 import { IoMdArrowRoundBack } from "react-icons/io";
-
-export default function WithPlayer() {
+export default function WithComputer() {
   const [timeMinute, setTimeMinute] = useState(5);
   const [timeSecond, setTimeSecond] = useState(0);
   const [selectedRounds, setSelectedRounds] = useState(1);
+  const [sideChosen, setSideChosen] = useState("X");
   const navigate = useNavigate();
   return (
     <div
@@ -65,7 +65,7 @@ export default function WithPlayer() {
           5
         </button>
       </div>
-      <p className="font-bold text-xl my-5">Total time for each person:</p>
+      <p className="font-bold text-xl my-5">Total time for you:</p>
       <div className="gap-5 flex-row w-screen">
         <button
           className="hover:shadow-lg hover:shadow-[#646cff] hover:border-[#646cff] hover:border-2 transition-all duration-50"
@@ -106,12 +106,33 @@ export default function WithPlayer() {
           -
         </button>
       </div>
+      <div>
+        <p className="font-bold text-xl my-5">Side chosen:</p>
+        <div>
+          <button
+            onClick={() => setSideChosen("X")}
+            className={`text-[#646cff] hover:border-[#646cff] hover:border-2 transition-all duration-50 ${
+              sideChosen === "X" ? "border-[#646cff] border-2" : ""
+            }`}
+          >
+            <span className="font-extrabold">X</span>
+          </button>
+          <button
+            onClick={() => setSideChosen("O")}
+            className={`ml-5 text-[#ff6f91] hover:border-[#ff6f91] hover:border-2 transition-all duration-50 ${
+              sideChosen === "O" ? "border-[#ff6f91] border-2" : ""
+            }`}
+          >
+            <span className="font-extrabold">O</span>
+          </button>
+        </div>
+      </div>
       <button
         onClick={() => {
           navigate(
-            `/playerGame?rounds=${selectedRounds}&time=${
+            `/computerGame?rounds=${selectedRounds}&time=${
               timeMinute * 60 + parseInt(timeSecond)
-            }`
+            }&side=${sideChosen}`
           );
         }}
         className="mt-4 px-4 py-2 bg-blue-600 rounded hover:shadow-lg hover:shadow-[#646cff] hover:border-[#646cff] hover:border-2 transition-all duration-50"

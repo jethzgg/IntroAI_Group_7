@@ -29,7 +29,7 @@ export default function WinningModal({ winner, score, rounds, onClose }) {
         )}
         <div className="flex">
           <button
-            className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 mr-2"
+            className="mt-4 px-4 py-2 text-white rounded hover:bg-gray-800!  mr-2"
             onClick={() => {
               navigate("/");
             }}
@@ -38,14 +38,14 @@ export default function WinningModal({ winner, score, rounds, onClose }) {
           </button>
           {score.X + score.O < rounds ? (
             <button
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="mt-4 px-4 py-2 text-white rounded hover:bg-gray-800!"
               onClick={onClose}
             >
               Next Round
             </button>
           ) : (
             <button
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="mt-4 px-4 py-2 text-white rounded hover:bg-gray-800!"
               onClick={() => {
                 window.location.reload();
               }}
