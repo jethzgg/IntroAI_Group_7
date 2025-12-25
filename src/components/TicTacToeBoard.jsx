@@ -62,10 +62,9 @@ export default function TicTacToeBoard({ onWin }) {
   const SIZE = 5;
   const [board, setBoard] = useState(Array(SIZE * SIZE).fill(null));
   const [isXTurn, setIsXTurn] = useState(true);
-  const [winnerFound, setWinner] = useState(null);
   const navigate = useNavigate();
   const handleClick = (index) => {
-    if (board[index] || winnerFound) return;
+    if (board[index]) return;
 
     const newBoard = [...board];
     newBoard[index] = isXTurn ? "X" : "O";
@@ -76,9 +75,11 @@ export default function TicTacToeBoard({ onWin }) {
 
     if (winner) {
       handleWin(winner);
-      setWinner(winner);
-      alert(`${winner} wins!`);
-      navigate("/");
+      return;
+    }
+
+    if (newBoard.every((cell) => cell !== null)) {
+      handleWin("draw");
       return;
     }
 
@@ -89,6 +90,8 @@ export default function TicTacToeBoard({ onWin }) {
     if (onWin) {
       onWin(winner);
     }
+    setBoard(Array(SIZE * SIZE).fill(null));
+    setIsXTurn(true);
   };
   return (
     <div style={styles.container}>
