@@ -144,6 +144,12 @@ async def reset_game():
     
     return {"status": "success", "message": "Game reset"}
 
+@app.post("/api/get_score")
+async def get_score():
+    """Get the current score of the board"""
+    score = ttt.heuristic(game_state["board"])
+    return {"score": score}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
