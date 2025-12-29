@@ -30,6 +30,9 @@ class MoveRequest(BaseModel):
     row: int
     col: int
 
+class BoardRequest(BaseModel):
+    board: list
+
 class GameState(BaseModel):
     board: list
     user: str
@@ -149,6 +152,39 @@ async def get_score():
     """Get the current score of the board"""
     score = ttt.heuristic(game_state["board"])
     return {"score": score}
+
+@app.post("/api/get_score_pvp")
+async def get_score_pvp(request: BoardRequest):
+    """Get the current score of the board in pvp mode"""
+    board = request.board
+    
+    # Validate board
+    if len(board) != ttt.N:
+        raise HTTPException(status_code=400, detail="Invalid board size")
+    for row in board:
+        if len(row) != ttt.N:
+            raise HTTPException(status_code=400, detail="Invalid board size")
+    
+    score = ttt.heuristic(board)
+    return {"score": score}
+
+@app.post("/api/best_move_pvp")
+async def get_best_move_pvp(request: BoardRequest):
+    """Get the best move for the current board in pvp mode"""
+    board = request.board
+    
+    # Validate board
+    if len(board) != ttt.N:
+        raise HTTPException(status_code=400, detail="Invalid board size")
+    for row in board:
+        if len(row) != ttt.N:
+            raise HTTPException(status_code=400, detail="Invalid board size")
+    
+    if ttt.isTerminal(board):
+        raise HTTPException(status_code=400, detail="Game is already over")
+    
+    row, col = ttt.bestMove(board)
+    return {"row": row, "col": col}
 
 if __name__ == "__main__":
     import uvicorn
