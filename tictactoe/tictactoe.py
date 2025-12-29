@@ -11,28 +11,48 @@ MAX_DEPTH = 5
 lastX, lastY = N // 2, N // 2
 
 patterns = {
-    "XXXX": 100000,
-    "_XXX_": 50000,
+    # === X patterns (Maximizing) ===
+    # Thắng ngay
+    "XXXX": 1000000,
+    
+    # Sắp thắng (không chặn được)
+    "_XXX_": 100000,
+    
+    # Sắp thắng (có thể chặn 1 đầu)
     "XXX_": 10000,
     "_XXX": 10000,
-    "_XX_": 4000,
-    "XX__": 800,
-    "__XX": 800,
-    "_X_": 20,
-    "__X__": 10,
-    "_X___": 3,
-    "___X_": 3,
-    "OOOO": -100000,
-    "_OOO_": -50000,
+    "XX_X": 10000,   # THÊM: pattern bị ngắt
+    "X_XX": 10000,   # THÊM: pattern bị ngắt
+    
+    # 2 quân liên tiếp
+    "_XX_": 1000,
+    "XX__": 100,
+    "__XX": 100,
+    "_X_X_": 500,    # THÊM: 2 quân cách 1 ô
+    "X__X": 50,      # THÊM: 2 quân cách 2 ô
+    
+    # 1 quân
+    "_X_": 10,
+    "__X__": 2,
+    "_X___": 1,
+    "___X_": 1,
+    
+    # === O patterns (Minimizing) ===
+    "OOOO": -1000000,
+    "_OOO_": -100000,
     "OOO_": -10000,
     "_OOO": -10000,
-    "_OO_": -4000,
-    "OO__": -800,
-    "__OO": -800,
-    "_O_": -20,
-    "__O__": -10,
-    "_O___": -3,
-    "___O_": -3,
+    "OO_O": -10000,  # THÊM
+    "O_OO": -10000,  # THÊM
+    "_OO_": -1000,
+    "OO__": -100,
+    "__OO": -100,
+    "_O_O_": -500,   # THÊM
+    "O__O": -50,     # THÊM
+    "_O_": -10,
+    "__O__": -2,
+    "_O___": -1,
+    "___O_": -1,
 }
 
 def initialState() -> list:
