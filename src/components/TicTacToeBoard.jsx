@@ -1,101 +1,112 @@
-import { useState } from "react";
-import Particles from "./Particle";
+import { useEffect, useState } from "react";
+import { getEval } from "../api/gameAPI";
 
-const checkWinner = (board, size = 5, winLength = 4) => {
-  const directions = [
-    [1, 0], // horizontal
-    [0, 1], // vertical
-    [1, 1], // diagonal down-right
-    [1, -1], // diagonal up-right
-  ];
+const EvalBar = ({ game, side }) => {
+  const [evalData, setEvalData] = useState(null);
 
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      const index = row * size + col;
-      const player = board[index];
-      if (!player) continue;
+  useEffect(() => {
+    if (!game || game.game_over) return;
 
-      for (const [dx, dy] of directions) {
-        let count = 1;
+    getEval()
+      .then((data) => {
+        setEvalData(data.score);
+      })
+      .catch(console.error);
+  }, [game]);
 
-        for (let step = 1; step < winLength; step++) {
-          const r = row + dy * step;
-          const c = col + dx * step;
+  if (evalData === null) return null;
 
-          if (r < 0 || r >= size || c < 0 || c >= size) break;
-          if (board[r * size + c] !== player) break;
-
-          count++;
-        }
-
-        if (count === winLength) {
-          return player;
-        }
-      }
-    }
-  }
-
-  return null;
-};
-
-const EvalBar = ({ board, isXTurn }) => {
-  const testEval = 78; // 0–100
+  const SCALE = 100_000;
+  const scaled = Math.tanh(evalData / SCALE); // [-1, 1]
+  const topHeight = 50 + scaled * 50;
+  const bottomHeight = 100 - topHeight;
 
   return (
-    <div className="flex flex-col h-full w-8">
+    <div className="flex flex-col h-full w-8 overflow-hidden">
       <div
-        className="bg-[#646cff] text-white flex items-end justify-center"
-        style={{ height: `${testEval}%` }}
+        className={`${
+          side === "X" ? "bg-[#ff4d4f]" : "bg-[#646cff]"
+        } text-white flex items-end justify-center
+           transition-[height] duration-500 ease-out`}
+        style={{ height: `${side === "X" ? bottomHeight : topHeight}%` }}
       >
-        {testEval / 100}
+        {(evalData / 100).toFixed(2)}
       </div>
 
       <div
-        className="bg-[#ff6f91] text-black"
-        style={{ height: `${100 - testEval}%` }}
+        className={`${
+          side === "X" ? "bg-[#646cff]" : "bg-[#ff4d4f]"
+        } transition-[height] duration-500 ease-out`}
+        style={{ height: `${side === "X" ? topHeight : bottomHeight}%` }}
       />
     </div>
   );
 };
-import { useNavigate } from "react-router";
-export default function TicTacToeBoard({ onWin }) {
-  const SIZE = 5;
-  const [board, setBoard] = useState(Array(SIZE * SIZE).fill(null));
-  const [isXTurn, setIsXTurn] = useState(true);
-  const navigate = useNavigate();
-  const handleClick = (index) => {
-    if (board[index]) return;
 
-    const newBoard = [...board];
-    newBoard[index] = isXTurn ? "X" : "O";
+import { startGame, makeMove, getGameStatus } from "../api/gameAPI";
+const SIZE = 5;
 
-    const winner = checkWinner(newBoard, SIZE, 4);
+const flattenBoard = (board2D) => board2D.flat();
 
-    setBoard(newBoard);
+export default function TicTacToeBoard({
+  onWin,
+  computer = true,
+  side = "X",
+  handleComputerThinking,
+}) {
+  const [game, setGame] = useState(null);
+  const [turn, setTurn] = useState(side);
+  // 🔹 Start game
+  useEffect(() => {
+    if (!computer) return;
 
-    if (winner) {
-      handleWin(winner);
-      return;
+    startGame(side)
+      .then(() => getGameStatus())
+      .then(setGame)
+      .catch(console.error);
+  }, []);
+
+  // Handle click
+  const handleClick = async (index) => {
+    if (!game || game.game_over || turn !== side) return;
+
+    const row = Math.floor(index / SIZE);
+    const col = index % SIZE;
+
+    try {
+      // Change X first in local state for responsiveness
+      setGame((prev) => {
+        const newBoard = prev.board.map((r) => r.slice());
+        newBoard[row][col] = "X";
+        return { ...prev, board: newBoard };
+      });
+      setTurn(side === "X" ? "O" : "X");
+      handleComputerThinking && handleComputerThinking(true);
+      const updated = await makeMove(row, col);
+      handleComputerThinking && handleComputerThinking(false);
+      setGame(updated);
+      setTurn(side);
+      if (updated.game_over) {
+        handleWin(updated.message);
+      }
+    } catch (err) {
+      alert(err.message);
     }
-
-    if (newBoard.every((cell) => cell !== null)) {
-      handleWin("draw");
-      return;
-    }
-
-    setIsXTurn(!isXTurn);
   };
 
-  const handleWin = (winner) => {
-    if (onWin) {
-      onWin(winner);
-    }
-    setBoard(Array(SIZE * SIZE).fill(null));
-    setIsXTurn(true);
+  const handleWin = (result) => {
+    console.log("Game over:", result);
+    if (onWin) onWin(result);
   };
+
+  if (!game) return <p>Loading...</p>;
+
+  const board = flattenBoard(game.board);
+
   return (
     <div style={styles.container}>
-      <EvalBar board={board} isXTurn={isXTurn} />
+      <EvalBar game={game} side={side} />
+
       <div
         style={{
           ...styles.board,
@@ -107,19 +118,22 @@ export default function TicTacToeBoard({ onWin }) {
           <div
             key={i}
             onClick={() => handleClick(i)}
-            className={`cell ${cell ? "filled" : ""}`}
+            className={`cell ${cell !== "_" ? "filled" : ""}`}
             style={{
               ...styles.cell,
               ...(cell === "X" ? styles.neonX : {}),
               ...(cell === "O" ? styles.neonO : {}),
+              cursor:
+                cell !== "_" || game.game_over || turn !== side
+                  ? "not-allowed"
+                  : "pointer",
             }}
           >
-            {cell}
+            {cell == "_" ? "" : cell}
           </div>
         ))}
       </div>
 
-      {/* Inline CSS for hover & neon */}
       <style>{css}</style>
     </div>
   );

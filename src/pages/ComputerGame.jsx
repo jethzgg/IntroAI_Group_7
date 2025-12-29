@@ -9,6 +9,8 @@ import { FaStepBackward } from "react-icons/fa";
 import { FaAngleLeft } from "react-icons/fa6";
 import { FaAngleRight } from "react-icons/fa6";
 import WinningModal from "../components/WinningModal";
+import { MdReplay } from "react-icons/md";
+import { resetGame } from "../api/gameAPI";
 export default function computerGame() {
   const navigate = useNavigate();
   const [turn, setTurn] = useState("X");
@@ -18,12 +20,19 @@ export default function computerGame() {
   const side = params.get("side") || "X";
   const [score, setScore] = useState({ X: 0, O: 0 });
   const [winner, setWinner] = useState(null);
+  const [gameKey, setGameKey] = useState(0);
+
   const onWin = (result) => {
+    if (result === "AI won") result = side === "X" ? "O" : "X";
+    if (result === "You won") result = side;
     setWinner(result);
     setScore((prev) => {
       if (result === "draw") return prev;
       return { ...prev, [result]: prev[result] + 1 };
     });
+  };
+  const handleComputerThinking = (thinking) => {
+    setTurn(thinking ? (side === "X" ? "O" : "X") : side);
   };
   return (
     <div
@@ -35,7 +44,12 @@ export default function computerGame() {
           winner={winner}
           score={score}
           rounds={rounds}
-          onClose={() => setWinner(null)}
+          onClose={() => {
+            resetGame().then(() => {
+              setWinner(null);
+              setGameKey((k) => k + 1); // 👈 trigger board reset
+            });
+          }}
         />
       )}
       <div
@@ -53,10 +67,15 @@ export default function computerGame() {
           playerName={"Computer"}
           playerSide={side === "X" ? "O" : "X"}
           timeLeft={time}
-          computer={true}
           playerSideActive={turn === (side === "X" ? "O" : "X")}
         />
-        <TicTacToeBoard onWin={onWin} />
+        <TicTacToeBoard
+          onWin={onWin}
+          computer={true}
+          side={side}
+          handleComputerThinking={handleComputerThinking}
+          key={gameKey}
+        />
         <PlayerCard
           playerName={"Player"}
           playerSide={side}
@@ -95,6 +114,16 @@ export default function computerGame() {
           </button>
           <button className=" bg-gray-700 rounded-md  hover:bg-gray-600 flex items-center justify-center hover:border-[#646cff] hover:border-2 transition-all duration-50">
             <FaAngleLeft className="text-3xl hover:cursor-pointer" />
+          </button>
+          <button
+            onClick={() => {
+              resetGame().then(() => {
+                window.location.reload();
+              });
+            }}
+            className=" bg-gray-700 rounded-md  hover:bg-gray-600 flex items-center justify-center hover:border-[#646cff] hover:border-2 transition-all duration-50"
+          >
+            <MdReplay className="text-3xl hover:cursor-pointer" />
           </button>
           <button className="bg-gray-700 rounded-md  hover:bg-gray-600 flex items-center justify-center hover:border-[#646cff] hover:border-2 transition-all duration-50">
             <FaAngleRight className="text-3xl hover:cursor-pointer" />

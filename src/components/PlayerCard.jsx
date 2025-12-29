@@ -45,49 +45,48 @@ export default function PlayerCard({
 
         <h2 className="text-2xl font-bold mb-2">{playerName}</h2>
       </div>
-      {!computer && (
-        <div
-          className={
-            "text-2xl  h-full px-3 rounded-md font-mono font-bold flex items-center w-40 justify-between " +
-            (playerSideActive
-              ? timer <= 30
-                ? "bg-red-500 text-white"
-                : "bg-white text-black"
-              : "bg-gray-900 text-gray-400 justify-end")
-          }
-        >
-          {playerSideActive &&
-            (timer % 12 === 0 ? (
-              <LuClock12 />
-            ) : timer % 12 === 1 ? (
-              <LuClock11 />
-            ) : timer % 12 === 2 ? (
-              <LuClock10 />
-            ) : timer % 12 === 3 ? (
-              <LuClock9 />
-            ) : timer % 12 === 4 ? (
-              <LuClock8 />
-            ) : timer % 12 === 5 ? (
-              <LuClock7 />
-            ) : timer % 12 === 6 ? (
-              <LuClock6 />
-            ) : timer % 12 === 7 ? (
-              <LuClock5 />
-            ) : timer % 12 === 8 ? (
-              <LuClock4 />
-            ) : timer % 12 === 9 ? (
-              <LuClock3 />
-            ) : timer % 12 === 10 ? (
-              <LuClock2 />
-            ) : (
-              <LuClock1 />
-            ))}
-          <p>
-            {Math.floor(timer / 60)}:
-            {timer % 60 < 10 ? `0${timer % 60}` : timer % 60}{" "}
-          </p>
-        </div>
-      )}
+
+      <div
+        className={
+          "text-2xl  h-full px-3 rounded-md font-mono font-bold flex items-center w-40 justify-between " +
+          (playerSideActive
+            ? timer <= 30
+              ? "bg-red-500 text-white"
+              : "bg-white text-black"
+            : "bg-gray-900 text-gray-400 justify-end")
+        }
+      >
+        {playerSideActive &&
+          (timer % 12 === 0 ? (
+            <LuClock12 />
+          ) : timer % 12 === 1 ? (
+            <LuClock11 />
+          ) : timer % 12 === 2 ? (
+            <LuClock10 />
+          ) : timer % 12 === 3 ? (
+            <LuClock9 />
+          ) : timer % 12 === 4 ? (
+            <LuClock8 />
+          ) : timer % 12 === 5 ? (
+            <LuClock7 />
+          ) : timer % 12 === 6 ? (
+            <LuClock6 />
+          ) : timer % 12 === 7 ? (
+            <LuClock5 />
+          ) : timer % 12 === 8 ? (
+            <LuClock4 />
+          ) : timer % 12 === 9 ? (
+            <LuClock3 />
+          ) : timer % 12 === 10 ? (
+            <LuClock2 />
+          ) : (
+            <LuClock1 />
+          ))}
+        <p>
+          {Math.floor(timer / 60)}:
+          {timer % 60 < 10 ? `0${timer % 60}` : timer % 60}{" "}
+        </p>
+      </div>
     </div>
   );
 }
