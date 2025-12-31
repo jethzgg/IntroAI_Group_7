@@ -7,7 +7,7 @@ O = "O"
 EMPTY = '_'
 WIN_LENGTH = 4
 N = 5
-MAX_DEPTH = 5
+MAX_DEPTH = 4
 lastX, lastY = N // 2, N // 2
 
 patterns = {
