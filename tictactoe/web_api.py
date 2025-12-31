@@ -39,11 +39,6 @@ class GameState(BaseModel):
     game_over: bool
     message: str
 
-@app.get("/")
-async def read_root():
-    """Serve the main HTML page"""
-    return FileResponse("index.html")
-
 @app.post("/api/start")
 async def start_game(request: StartGameRequest):
     """Start a new game"""

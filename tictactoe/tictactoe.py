@@ -11,44 +11,33 @@ MAX_DEPTH = 5
 lastX, lastY = N // 2, N // 2
 
 patterns = {
-    # === X patterns (Maximizing) ===
-    # Thắng ngay
     "XXXX": 1000000,
-    
-    # Sắp thắng (không chặn được)
     "_XXX_": 100000,
-    
-    # Sắp thắng (có thể chặn 1 đầu)
     "XXX_": 10000,
     "_XXX": 10000,
-    "XX_X": 10000,   # THÊM: pattern bị ngắt
-    "X_XX": 10000,   # THÊM: pattern bị ngắt
-    
-    # 2 quân liên tiếp
+    "XX_X": 10000,
+    "X_XX": 10000,
     "_XX_": 1000,
     "XX__": 100,
     "__XX": 100,
-    "_X_X_": 500,    # THÊM: 2 quân cách 1 ô
-    "X__X": 50,      # THÊM: 2 quân cách 2 ô
-    
-    # 1 quân
+    "_X_X_": 500,
+    "X__X": 50,
     "_X_": 10,
     "__X__": 2,
     "_X___": 1,
     "___X_": 1,
     
-    # === O patterns (Minimizing) ===
     "OOOO": -1000000,
     "_OOO_": -100000,
     "OOO_": -10000,
     "_OOO": -10000,
-    "OO_O": -10000,  # THÊM
-    "O_OO": -10000,  # THÊM
+    "OO_O": -10000,
+    "O_OO": -10000,
     "_OO_": -1000,
     "OO__": -100,
     "__OO": -100,
-    "_O_O_": -500,   # THÊM
-    "O__O": -50,     # THÊM
+    "_O_O_": -500,
+    "O__O": -50,
     "_O_": -10,
     "__O__": -2,
     "_O___": -1,
@@ -58,7 +47,7 @@ patterns = {
 def initialState() -> list:
     return [[EMPTY for _ in range(N)] for _ in range(N)]
 
-def getValidMove(board, radius) -> list: # most commonly, radius is 
+def getValidMove(board, radius) -> list:
     has_move = False
     moves = set()
     for i in range(N):
@@ -115,32 +104,45 @@ def isTerminal(board) -> bool:
     return True
 
 def heuristic(board):
+    player = whoseTurn(board)
     score  = 0
     for row in board:
         row_str = ''.join(row)
         for p, val in patterns.items():
             if p in row_str:
-                score += val
-    # Cột
+                if (player == X):
+                    score = max(score, val)
+                else:
+                    score = min(score, val)
+    # check columns
     for col in range(N):
         col_str = ''.join(board[row][col] for row in range(N))
         for p, val in patterns.items():
             if p in col_str:
-               score += val
+                if (player == X):
+                    score = max(score, val)
+                else:
+                    score = min(score, val)
 
     for i in range(N - WIN_LENGTH + 1): # for i in range(2)
         for j in range(N - WIN_LENGTH + 1): # for j in range(2)
             diag = ''.join(board[i + k][j + k] for k in range(WIN_LENGTH))
             for p, val in patterns.items():
                 if p in diag:
-                    score += val
+                    if (player == X):
+                        score = max(score, val)
+                    else:
+                        score = min(score, val)
 
     for i in range(N - WIN_LENGTH + 1):
         for j in range(WIN_LENGTH - 1, N):
             diag = ''.join(board[i + k][j - k] for k in range(WIN_LENGTH))
             for p, val in patterns.items():
                 if p in diag:
-                    score += val
+                    if (player == X):
+                        score = max(score, val)
+                    else:
+                        score = min(score, val)
     return score
 
 def minimax(board, depth, alpha, beta, maxPlayer) -> int:
