@@ -77,7 +77,7 @@ export default function TicTacToeBoard({
       // Change X first in local state for responsiveness
       setGame((prev) => {
         const newBoard = prev.board.map((r) => r.slice());
-        newBoard[row][col] = "X";
+        newBoard[row][col] = side;
         return { ...prev, board: newBoard };
       });
       setTurn(side === "X" ? "O" : "X");
@@ -163,19 +163,19 @@ const styles = {
     transition: "transform 0.15s ease, box-shadow 0.15s ease",
   },
   neonX: {
-    color: "#ff4d4f",
-    textShadow: `
-      0 0 4px #ff4d4f,
-      0 0 8px #ff4d4f,
-      0 0 18px rgba(255, 77, 79, 0.8)
-    `,
-  },
-  neonO: {
     color: "#646cff",
     textShadow: `
       0 0 4px #646cff,
       0 0 8px #646cff,
       0 0 18px rgba(100, 108, 255, 0.8)
+    `,
+  },
+  neonO: {
+    color: "#ff4d4f",
+    textShadow: `
+      0 0 4px #ff4d4f,
+      0 0 8px #ff4d4f,
+      0 0 18px rgba(255, 77, 79, 0.8)
     `,
   },
 };
