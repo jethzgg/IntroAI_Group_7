@@ -5,9 +5,8 @@ import time
 import tictactoe as ttt
 
 pygame.init()
-size = width, height = 700, 700  # Tăng kích thước cửa sổ cho 5x5
+size = width, height = 700, 700  
 
-# Colors
 black = (0, 0, 0)
 white = (255, 255, 255)
 
@@ -16,7 +15,7 @@ pygame.display.set_caption("Tic-Tac-Toe 5x5")
 
 mediumFont = pygame.font.Font("OpenSans-Regular.ttf", 28)
 largeFont = pygame.font.Font("OpenSans-Regular.ttf", 40)
-moveFont = pygame.font.Font("OpenSans-Regular.ttf", 50)  # Giảm font size cho ô nhỏ hơn
+moveFont = pygame.font.Font("OpenSans-Regular.ttf", 50)  
 
 user = None
 board = ttt.initialState()
@@ -53,7 +52,6 @@ while True:
         pygame.draw.rect(screen, white, playOButton)
         screen.blit(playO, playORect)
 
-        # Check if button is clicked
         click, _, _ = pygame.mouse.get_pressed()
         if click == 1:
             mouse = pygame.mouse.get_pos()
@@ -66,16 +64,15 @@ while True:
 
     else:
 
-        # Draw game board - THAY ĐỔI CHO 5x5
-        tile_size = 80  # Kích thước mỗi ô
-        board_size = 5  # Kích thước bảng 5x5
+        tile_size = 80  
+        board_size = 5  
         tile_origin = (width / 2 - (board_size / 2 * tile_size),
                        height / 2 - (board_size / 2 * tile_size))
         tiles = []
         
-        for i in range(board_size):  # Thay range(3) thành range(5)
+        for i in range(board_size):  
             row = []
-            for j in range(board_size):  # Thay range(3) thành range(5)
+            for j in range(board_size): 
                 rect = pygame.Rect(
                     tile_origin[0] + j * tile_size,
                     tile_origin[1] + i * tile_size,
@@ -123,12 +120,11 @@ while True:
             else:
                 ai_turn = True
 
-        # Check for a user move - THAY ĐỔI CHO 5x5
         click, _, _ = pygame.mouse.get_pressed()
         if click == 1 and user == player and not game_over:
             mouse = pygame.mouse.get_pos()
-            for i in range(board_size):  # Thay range(3) thành range(5)
-                for j in range(board_size):  # Thay range(3) thành range(5)
+            for i in range(board_size):  
+                for j in range(board_size):  
                     if (board[i][j] == ttt.EMPTY and tiles[i][j].collidepoint(mouse)):
                         board[i][j] = ttt.whoseTurn(board)
                         ttt.lastX, ttt.lastY = i, j                        
