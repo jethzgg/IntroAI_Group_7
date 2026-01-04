@@ -1,5 +1,6 @@
 import math
 import random
+import time
 
 X = "X"
 O = "O"
@@ -8,6 +9,7 @@ WIN_LENGTH = 4
 N = 5
 MAX_DEPTH = 4
 lastX, lastY = None, None
+ai_time = 0
 
 patterns = {
     # X patterns (Maximizing) 
@@ -164,17 +166,24 @@ def minimax(board, depth, alpha, beta, maxPlayer) -> int:
         return minValue
     
 def bestMove(board) -> tuple[int, int]:
+    global ai_time
     player = whoseTurn(board)
     moves = getValidMove(board)
     best_x, best_y = None, None
+    start_time = time.perf_counter()
     step = sum(1 for row in board for cell in row if cell != EMPTY) 
     if step == 0:
+        end_time = time.perf_counter()
+        ai_time += end_time - start_time
         return (N // 2, N // 2)
     elif step == 1:
-        # if only one move has been played, play randomly in one of the corners
+        if board[2][2] == EMPTY:
+            return (N // 2, N // 2)
         choice = [1, 3]
         x = choice[random.randint(0, 1)]
         y = choice[random.randint(0, 1)]
+        end_time = time.perf_counter()
+        ai_time += end_time - start_time
         return (x, y)
     # In here, the best move is the move that has the best minimax value for AI player
     # If AI is X, we want to maximize the minimax value
@@ -197,4 +206,6 @@ def bestMove(board) -> tuple[int, int]:
             if value < minValue:
                 minValue = value
                 best_x, best_y = x, y
+    end_time = time.perf_counter()
+    ai_time += end_time - start_time
     return (best_x, best_y)

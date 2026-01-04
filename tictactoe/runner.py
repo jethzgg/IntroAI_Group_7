@@ -20,6 +20,7 @@ moveFont = pygame.font.Font("OpenSans-Regular.ttf", 50)
 user = None
 board = ttt.initialState()
 ai_turn = False
+printed_stats = False  # Thêm biến cờ
 
 while True:
     for event in pygame.event.get():
@@ -93,6 +94,14 @@ while True:
 
         # Show title
         if game_over:
+            # In thống kê chỉ 1 lần
+            if not printed_stats:
+                total_moves = sum(1 for row in board for cell in row if cell != ttt.EMPTY)
+                ai_moves = total_moves // 2
+                if ai_moves > 0:
+                    print("Average AI time per move:", ttt.ai_time / ai_moves)
+                printed_stats = True
+
             winner_player = None
             if ttt.winner(board, ttt.X): winner_player = ttt.X
             if ttt.winner(board, ttt.O): winner_player = ttt.O
@@ -144,5 +153,7 @@ while True:
                     user = None
                     board = ttt.initialState()
                     ai_turn = False
+                    printed_stats = False  # Reset cờ khi chơi lại
+                    ttt.ai_time = 0  # Reset thời gian AI
 
     pygame.display.flip()
