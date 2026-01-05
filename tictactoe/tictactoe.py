@@ -1,6 +1,6 @@
 import math
-import time
 import random
+import time
 
 X = "X"
 O = "O"
@@ -8,34 +8,32 @@ EMPTY = '_'
 WIN_LENGTH = 4
 N = 5
 MAX_DEPTH = 4
-lastX, lastY = N // 2, N // 2
+lastX, lastY = None, None
+ai_time = 0
 
 patterns = {
-    "XXXX_": 1000000,
-    "_XXXX": 1000000,
-    "X_XXX": 1000000,
-    "XX_XX": 1000000,
-    "XXX_X": 1000000,
+    # X patterns (Maximizing) 
+    # Thắng ngay
+    "XXXX": 1000000,
+    # Sắp thắng (không chặn được)
     "_XXX_": 100000,
+    # Sắp thắng (có thể chặn 1 đầu)
     "XXX_": 10000,
     "_XXX": 10000,
-    "XX_X": 10000,
-    "X_XX": 10000,
+    "XX_X": 10000,  
+    # 2 quân liên tiếp
     "_XX_": 1000,
     "XX__": 100,
     "__XX": 100,
-    "_X_X_": 500,
-    "X__X": 50,
+    "_X_X_": 500, 
+    "X__X": 50,   
+    # 1 quân
     "_X_": 10,
     "__X__": 2,
     "_X___": 1,
     "___X_": 1,
-    
-    "OOOO_": -1000000,
-    "_OOOO": -1000000,
-    "O_OOO": -1000000,
-    "OO_OO": -1000000,
-    "OOO_O": -1000000,
+    # O patterns (Minimizing)
+    "OOOO": -1000000,
     "_OOO_": -100000,
     "OOO_": -10000,
     "_OOO": -10000,
@@ -45,30 +43,27 @@ patterns = {
     "OO__": -100,
     "__OO": -100,
     "_O_O_": -500,
-    "O__O": -50,
+    "O__O": -50,  
     "_O_": -10,
     "__O__": -2,
     "_O___": -1,
-    "___O_": -1,
+    "___O_": -1
 }
 
-def initialState() -> list:
+def initialState() -> list[list[str]]:
     return [[EMPTY for _ in range(N)] for _ in range(N)]
-
-def getValidMove(board, radius) -> list:
-    has_move = False
-    moves = set()
+def findLastMove(board):
     for i in range(N):
         for j in range(N):
             if board[i][j] != EMPTY:
-                for dx in range(-radius, radius + 1):
-                    for dy in range(-radius, radius + 1):
-                        new_x, new_y = i + dx, j + dy
-                        if 0 <= new_x < N and 0 <= new_y < N and board[new_x][new_y] == EMPTY:
-                            has_move = True
-                            moves.add((new_x, new_y))
-    if not has_move:
-        return [(N // 2, N // 2)]
+                return i, j
+    return N // 2, N // 2
+def getValidMove(board) -> list[tuple[int, int]]: 
+    moves = list()
+    for i in range(N):
+        for j in range(N):
+            if board[i][j] == EMPTY:   
+               moves.append((i, j))
     return list(moves)
 
 def whoseTurn(board) -> str:
@@ -111,46 +106,30 @@ def isTerminal(board) -> bool:
                 return False
     return True
 
-def heuristic(board):
-    player = whoseTurn(board)
+def heuristic(board) -> int:
     score  = 0
     for row in board:
         row_str = ''.join(row)
         for p, val in patterns.items():
             if p in row_str:
-                if (player == X):
-                    score = max(score, val)
-                else:
-                    score = min(score, val)
-    # check columns
+                score += val
     for col in range(N):
         col_str = ''.join(board[row][col] for row in range(N))
         for p, val in patterns.items():
             if p in col_str:
-                if (player == X):
-                    score = max(score, val)
-                else:
-                    score = min(score, val)
-
-    for i in range(N - WIN_LENGTH + 1): # for i in range(2)
-        for j in range(N - WIN_LENGTH + 1): # for j in range(2)
+               score += val
+    for i in range(N - WIN_LENGTH + 1): 
+        for j in range(N - WIN_LENGTH + 1): 
             diag = ''.join(board[i + k][j + k] for k in range(WIN_LENGTH))
             for p, val in patterns.items():
                 if p in diag:
-                    if (player == X):
-                        score = max(score, val)
-                    else:
-                        score = min(score, val)
-
+                    score += val
     for i in range(N - WIN_LENGTH + 1):
         for j in range(WIN_LENGTH - 1, N):
             diag = ''.join(board[i + k][j - k] for k in range(WIN_LENGTH))
             for p, val in patterns.items():
                 if p in diag:
-                    if (player == X):
-                        score = max(score, val)
-                    else:
-                        score = min(score, val)
+                    score += val
     return score
 
 def minimax(board, depth, alpha, beta, maxPlayer) -> int:
@@ -164,9 +143,10 @@ def minimax(board, depth, alpha, beta, maxPlayer) -> int:
     if depth == 0:
         return heuristic(board)
     # available moves
-    moves = getValidMove(board, radius = 1)
-    # sort base on manhattan
-    moves.sort(key=lambda m: abs(m[0] - lastX) + abs(m[1] - lastY))
+    moves = getValidMove(board)
+    # sort base on manhattan distance to last move
+    lx, ly = findLastMove(board)
+    moves.sort(key=lambda m: abs(m[0] - lx) + abs(m[1] - ly))
     # recursion
     if maxPlayer:
         maxValue = -math.inf
@@ -191,24 +171,31 @@ def minimax(board, depth, alpha, beta, maxPlayer) -> int:
                 break
         return minValue
     
-def bestMove(board) -> (tuple):
+def bestMove(board) -> tuple[int, int]:
+    global ai_time
     player = whoseTurn(board)
-    moves = getValidMove(board, radius = 1)
+    if player not in (X, O):
+        player = X
+    moves = getValidMove(board)
     best_x, best_y = None, None
+    start_time = time.perf_counter()
     step = sum(1 for row in board for cell in row if cell != EMPTY) 
     if step == 0:
+        end_time = time.perf_counter()
+        ai_time += end_time - start_time
         return (N // 2, N // 2)
     elif step == 1:
-        lowerX = lastX - 1 if lastX // 2 - 1 >= 0 else 0
-        upperX = lastX + 1 if lastX // 2 + 1 < N else N
-        lowerY = lastY - 1 if lastY // 2 - 1 >= 0 else 0
-        upperY = lastY + 1 if lastY // 2 + 1 < N else N
-        x, y = random.randint(lowerX, upperX), random.randint(lowerY, upperY)
+        if board[2][2] == EMPTY:
+            return (N // 2, N // 2)
+        choice = [1, 3]
+        x = choice[random.randint(0, 1)]
+        y = choice[random.randint(0, 1)]
+        end_time = time.perf_counter()
+        ai_time += end_time - start_time
         return (x, y)
-    # In here, the best move is the move that has the highest value
-    # The value of a move is the minValue for minPlayer if maxPlayer are considered to move
-    # Otherwise, the value of a move is the maxValue for maxPlayer if the minPlayer are
-    # considered to move
+    # In here, the best move is the move that has the best minimax value for AI player
+    # If AI is X, we want to maximize the minimax value
+    # If AI is O, we want to minimize the minimax value
     if player == X:
         maxValue = -math.inf
         for x, y in moves:
@@ -227,4 +214,6 @@ def bestMove(board) -> (tuple):
             if value < minValue:
                 minValue = value
                 best_x, best_y = x, y
+    end_time = time.perf_counter()
+    ai_time += end_time - start_time
     return (best_x, best_y)
