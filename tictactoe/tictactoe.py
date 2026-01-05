@@ -14,37 +14,38 @@ ai_time = 0
 patterns = {
     # X patterns (Maximizing) 
     # Thắng ngay
-    "XXXX": 1000000,
+    "XXXX": 100000000,
     # Sắp thắng (không chặn được)
-    "_XXX_": 100000,
+    "_XXX_": 100000000,
     # Sắp thắng (có thể chặn 1 đầu)
-    "XXX_": 10000,
-    "_XXX": 10000,
-    "XX_X": 10000,  
+    "XXX_": 1000000,
+    "_XXX": 1000000,
+    "XX_X": 1000000,
+    "X_XX": 1000000,  
     # 2 quân liên tiếp
-    "_XX_": 1000,
-    "XX__": 100,
-    "__XX": 100,
-    "_X_X_": 500, 
-    "X__X": 50,   
+    "_XX_": 100000,
+    "_X_X_": 5000, 
+    "XX__": 10000,
+    "__XX": 10000,
+    "X__X": 5000,   
     # 1 quân
-    "_X_": 10,
+    "_X___": 100,
     "__X__": 2,
     "_X___": 1,
     "___X_": 1,
     # O patterns (Minimizing)
-    "OOOO": -1000000,
-    "_OOO_": -100000,
-    "OOO_": -10000,
-    "_OOO": -10000,
-    "OO_O": -10000,
-    "O_OO": -10000,
-    "_OO_": -1000,
-    "OO__": -100,
-    "__OO": -100,
-    "_O_O_": -500,
-    "O__O": -50,  
-    "_O_": -10,
+    "OOOO": -100000000,
+    "_OOO_": -100000000,
+    "OOO_": -1000000,
+    "_OOO": -1000000,
+    "OO_O": -1000000,
+    "O_OO": -1000000,
+    "_OO_": -100000,
+    "_O_O_": -5000,
+    "OO__": -10000,
+    "__OO": -10000,
+    "O__O": -5000,  
+    "_O_": -100,
     "__O__": -2,
     "_O___": -1,
     "___O_": -1
@@ -140,7 +141,6 @@ def minimax(board, depth, alpha, beta, maxPlayer) -> int:
     # available moves
     moves = getValidMove(board)
     # sort base on manhattan distance to last move
-    moves.sort(key=lambda m: abs(m[0] - lastX) + abs(m[1] - lastY))
     # recursion
     if maxPlayer:
         maxValue = -math.inf
