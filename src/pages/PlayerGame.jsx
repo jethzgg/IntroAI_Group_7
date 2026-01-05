@@ -10,6 +10,10 @@ import { FaStepBackward } from "react-icons/fa";
 import { FaAngleLeft } from "react-icons/fa6";
 import { FaAngleRight } from "react-icons/fa6";
 import WinningModal from "../components/WinningModal";
+import PVPBoard from "../components/PVPBoard";
+import { PiMagnifyingGlassDuotone } from "react-icons/pi";
+import { FaStar } from "react-icons/fa";
+
 export default function PlayerGame() {
   const navigate = useNavigate();
   const [turn, setTurn] = useState("X");
@@ -18,6 +22,8 @@ export default function PlayerGame() {
   const time = params.get("time") || 300;
   const [score, setScore] = useState({ X: 0, O: 0 });
   const [winner, setWinner] = useState(null);
+  const [showEval, setShowEval] = useState(false);
+  const [showBestMove, setShowBestMove] = useState(false);
   const onWin = (result) => {
     setWinner(result);
     setScore((prev) => {
@@ -55,7 +61,11 @@ export default function PlayerGame() {
           timeLeft={time}
           playerSideActive={turn === "X"}
         />
-        <TicTacToeBoard onWin={onWin} />
+        <PVPBoard
+          onWin={onWin}
+          showEval={showEval}
+          showBestMove={showBestMove}
+        />
         <PlayerCard
           playerName={"Player 2"}
           playerSide={"O"}
@@ -96,6 +106,28 @@ export default function PlayerGame() {
           </button>
           <button className="bg-gray-700 rounded-md  hover:bg-gray-600 flex items-center justify-center hover:border-[#646cff] hover:border-2 transition-all duration-50">
             <FaStepForward className="text-3xl hover:cursor-pointer" />
+          </button>
+        </div>
+        <div className="flex gap-2 justify-center items-center mt-5">
+          <button
+            onClick={() => {
+              setShowEval(!showEval);
+            }}
+            className={`${
+              showEval ? "bg-[#646cff]!" : "bg-gray-700"
+            } rounded-md  hover:bg-gray-600 flex items-center justify-center hover:border-[#646cff] hover:border-2 transition-all duration-50`}
+          >
+            <PiMagnifyingGlassDuotone className="text-3xl hover:cursor-pointer" />
+          </button>
+          <button
+            onClick={() => {
+              setShowBestMove(!showBestMove);
+            }}
+            className={`${
+              showBestMove ? "bg-[#646cff]!" : "bg-gray-700"
+            } rounded-md  hover:bg-gray-600 flex items-center justify-center hover:border-[#646cff] hover:border-2 transition-all duration-50`}
+          >
+            <FaStar className="text-3xl hover:cursor-pointer" />
           </button>
         </div>
       </div>

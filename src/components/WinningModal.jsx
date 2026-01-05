@@ -8,7 +8,11 @@ export default function WinningModal({ winner, score, rounds, onClose }) {
         {score.X + score.O < rounds ? (
           <div>
             <h2 className="text-2xl font-bold mb-4 text-black">
-              {winner != "draw" ? `${winner} win this round!` : "It's a Draw!"}
+              {winner != "draw"
+                ? `${
+                    winner == "Tie" ? "Two players tie" : winner + " win"
+                  } this round!`
+                : "It's a Draw!"}
             </h2>
             <p className="text-black text-xl">Current Score</p>
             <p className="font-bold text-5xl mb-10 text-black">

@@ -78,3 +78,29 @@ export async function getEval() {
   }
   return res.json();
 }
+export async function getEvalPVP(board) {
+  const res = await fetch(`${API_BASE}/get_score_pvp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ board }),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to get evaluation for PVP");
+  }
+  return res.json();
+}
+export async function getBestMove(board) {
+  const res = await fetch(`${API_BASE}/best_move_pvp`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ board }),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to get best move");
+  }
+  return res.json();
+}
