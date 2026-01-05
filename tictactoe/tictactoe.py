@@ -13,38 +13,35 @@ ai_time = 0
 
 patterns = {
     # X patterns (Maximizing) 
-    # Thắng ngay
-    "XXXX": 100000000,
     # Sắp thắng (không chặn được)
     "_XXX_": 100000000,
     # Sắp thắng (có thể chặn 1 đầu)
     "XXX_": 1000000,
     "_XXX": 1000000,
-    "XX_X": 1000000,
-    "X_XX": 1000000,  
+    "XX_X": 100000,
+    "X_XX": 100000,  
     # 2 quân liên tiếp
     "_XX_": 100000,
     "_X_X_": 5000, 
     "XX__": 10000,
     "__XX": 10000,
-    "X__X": 5000,   
+    "X__X": 500,   
     # 1 quân
     "_X___": 100,
     "__X__": 2,
     "_X___": 1,
     "___X_": 1,
     # O patterns (Minimizing)
-    "OOOO": -100000000,
     "_OOO_": -100000000,
     "OOO_": -1000000,
     "_OOO": -1000000,
-    "OO_O": -1000000,
-    "O_OO": -1000000,
+    "OO_O": -100000,
+    "O_OO": -100000,
     "_OO_": -100000,
     "_O_O_": -5000,
     "OO__": -10000,
     "__OO": -10000,
-    "O__O": -5000,  
+    "O__O": -500,  
     "_O_": -100,
     "__O__": -2,
     "_O___": -1,
@@ -132,15 +129,14 @@ def minimax(board, depth, alpha, beta, maxPlayer) -> int:
     # end of recursion
     if isTerminal(board):
         if winner(board, X):
-            return 1000000
+            return 100000000
         if winner(board, O):
-            return -1000000
+            return -100000000
         return 0
     if depth == 0:
         return heuristic(board)
     # available moves
     moves = getValidMove(board)
-    # sort base on manhattan distance to last move
     # recursion
     if maxPlayer:
         maxValue = -math.inf
