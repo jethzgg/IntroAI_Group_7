@@ -5,9 +5,8 @@ import time
 import tictactoe as ttt
 
 pygame.init()
-size = width, height = 700, 700 
+size = width, height = 700, 700  
 
-# Colors
 black = (0, 0, 0)
 white = (255, 255, 255)
 
@@ -16,11 +15,12 @@ pygame.display.set_caption("Tic-Tac-Toe 5x5")
 
 mediumFont = pygame.font.Font("OpenSans-Regular.ttf", 28)
 largeFont = pygame.font.Font("OpenSans-Regular.ttf", 40)
-moveFont = pygame.font.Font("OpenSans-Regular.ttf", 50) 
+moveFont = pygame.font.Font("OpenSans-Regular.ttf", 50)  
 
 user = None
 board = ttt.initialState()
 ai_turn = False
+printed_stats = False  # Thêm biến cờ
 
 while True:
     for event in pygame.event.get():
@@ -53,7 +53,6 @@ while True:
         pygame.draw.rect(screen, white, playOButton)
         screen.blit(playO, playORect)
 
-        # Check if button is clicked
         click, _, _ = pygame.mouse.get_pressed()
         if click == 1:
             mouse = pygame.mouse.get_pos()
@@ -73,7 +72,7 @@ while True:
         
         for i in range(board_size):  
             row = []
-            for j in range(board_size):  
+            for j in range(board_size): 
                 rect = pygame.Rect(
                     tile_origin[0] + j * tile_size,
                     tile_origin[1] + i * tile_size,
@@ -94,6 +93,14 @@ while True:
 
         # Show title
         if game_over:
+            # In thống kê chỉ 1 lần
+            if not printed_stats:
+                total_moves = sum(1 for row in board for cell in row if cell != ttt.EMPTY)
+                ai_moves = total_moves // 2
+                if ai_moves > 0:
+                    print("Average AI time per move:", ttt.ai_time / ai_moves)
+                printed_stats = True
+
             winner_player = None
             if ttt.winner(board, ttt.X): winner_player = ttt.X
             if ttt.winner(board, ttt.O): winner_player = ttt.O
@@ -121,12 +128,11 @@ while True:
             else:
                 ai_turn = True
 
-        # Check for a user move
         click, _, _ = pygame.mouse.get_pressed()
         if click == 1 and user == player and not game_over:
             mouse = pygame.mouse.get_pos()
             for i in range(board_size):  
-                for j in range(board_size): 
+                for j in range(board_size):  
                     if (board[i][j] == ttt.EMPTY and tiles[i][j].collidepoint(mouse)):
                         board[i][j] = ttt.whoseTurn(board)
                         ttt.lastX, ttt.lastY = i, j                        
@@ -146,5 +152,7 @@ while True:
                     user = None
                     board = ttt.initialState()
                     ai_turn = False
+                    printed_stats = False  # Reset cờ khi chơi lại
+                    ttt.ai_time = 0  # Reset thời gian AI
 
     pygame.display.flip()
